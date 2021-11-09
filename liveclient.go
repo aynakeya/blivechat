@@ -25,8 +25,8 @@ func SetupDanmuClient(g *gocui.Gui, cl *blivedm.BLiveWsClient) {
 		if danmuV == nil {
 			return
 		}
-		if danmuV.LinesHeight() > 1024 {
-			tmp := danmuV.BufferLines()[danmuV.LinesHeight()-1024 : danmuV.LinesHeight()]
+		if danmuV.LinesHeight() > 256 {
+			tmp := danmuV.BufferLines()[danmuV.LinesHeight()-128 : danmuV.LinesHeight()]
 			danmuV.Clear()
 			for _, l := range tmp {
 				if (len(l)) > 0 {
