@@ -46,6 +46,13 @@ func main() {
 		HearbeatInterval: 25 * time.Second}
 	blivechat.SetKeybindings(g)
 	blivechat.SetupDanmuClient(g,&cl)
+	go func() {
+		time.Sleep(1 * time.Second)
+		err := blivechat.InitEditView(g)
+		if err != nil {
+			log.Panicln(err)
+		}
+	}()
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}
