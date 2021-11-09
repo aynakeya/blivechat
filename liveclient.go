@@ -25,6 +25,15 @@ func SetupDanmuClient(g *gocui.Gui, cl *blivedm.BLiveWsClient) {
 		if danmuV == nil {
 			return
 		}
+		if danmuV.LinesHeight() > 1024 {
+			tmp := danmuV.BufferLines()[danmuV.LinesHeight()-1024 : danmuV.LinesHeight()]
+			danmuV.Clear()
+			for _, l := range tmp {
+				if (len(l)) > 0 {
+					viewPrintln(danmuV, l)
+				}
+			}
+		}
 		viewPrintln(danmuV,
 			fmt.Sprintf("[%s](%d) %s: %s",
 				msg.MedalName, msg.MedalLevel, msg.Uname, msg.Msg))
