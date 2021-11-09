@@ -49,3 +49,11 @@ func NextView(g *gocui.Gui, v *gocui.View) error {
 	}
 	return nil
 }
+
+func InitEditView(g *gocui.Gui) error {
+	if _, err := setCurrentViewOnTop(g, ViewSend); err != nil {
+		return err
+	}
+	g.Cursor = true
+	return nil
+}
