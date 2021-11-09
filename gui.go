@@ -5,8 +5,8 @@ import (
 	"log"
 )
 
-func CreateGUI()  *gocui.Gui{
-	g, err := gocui.NewGui(gocui.OutputNormal,false)
+func CreateGUI() *gocui.Gui {
+	g, err := gocui.NewGui(gocui.OutputTrue, false)
 	if err != nil {
 		log.Panicln(err)
 	}

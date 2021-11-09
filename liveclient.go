@@ -8,13 +8,6 @@ import (
 )
 
 var Client *blivedm.BLiveWsClient
-var MsgConfig blivedm.DanmakuSendForm = blivedm.DanmakuSendForm{
-	Bubble:   0,
-	Message:  "",
-	Color:    "16777215",
-	Fontsize: 25,
-	Rnd:      0,
-}
 
 func SetupDanmuClient(g *gocui.Gui, cl *blivedm.BLiveWsClient) {
 	Client = cl
@@ -34,13 +27,12 @@ func SetupDanmuClient(g *gocui.Gui, cl *blivedm.BLiveWsClient) {
 				}
 			}
 		}
-		viewPrintln(danmuV,
-			fmt.Sprintf("[%s](%d) %s: %s",
-				msg.MedalName, msg.MedalLevel, msg.Uname, msg.Msg))
+		PrintDanmu(danmuV, msg)
 		g.Update(func(gui *gocui.Gui) error {
 			return nil
 		})
 	})
+
 	g.Update(func(gui *gocui.Gui) error {
 		debugV, err := g.View(ViewDebug)
 		if err != nil {
@@ -95,10 +87,10 @@ func SetupDanmuClient(g *gocui.Gui, cl *blivedm.BLiveWsClient) {
 			return v.SetCursor(0, 0)
 		}
 		message, err := Client.SendMessage(blivedm.DanmakuSendForm{
-			Bubble:   MsgConfig.Bubble,
+			Bubble:   SendFormConfig.Bubble,
 			Message:  msg,
-			Color:    MsgConfig.Color,
-			Fontsize: MsgConfig.Fontsize,
+			Color:    SendFormConfig.Color,
+			Fontsize: SendFormConfig.Fontsize,
 			Rnd:      int(time.Now().Unix()),
 		})
 		if err != nil {
