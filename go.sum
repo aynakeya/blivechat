@@ -1,5 +1,5 @@
-github.com/aynakeya/blivedm v0.1.1 h1:lMfCne1Pwm/HZOFiM68YATblsVpiTJTWjKssWE9YwRg=
-github.com/aynakeya/blivedm v0.1.1/go.mod h1:g7cA6/BfDcrsD4v9w+P6B9Z+gANi4jPlGkZ1Oyuu/i4=
+github.com/aynakeya/blivedm v0.1.2 h1:Xwzl03ZV3tG/Yul+oL/s8OuSgAtk5fKwtclOElvHOu0=
+github.com/aynakeya/blivedm v0.1.2/go.mod h1:g7cA6/BfDcrsD4v9w+P6B9Z+gANi4jPlGkZ1Oyuu/i4=
 github.com/aynakeya/gocui v1.0.2 h1:KXoaUvsvYJ22KSUIAtkKm5qbdnGgE6huBr188dF89X4=
 github.com/aynakeya/gocui v1.0.2/go.mod h1:7OimD8QkEG/b5bxv0h0E+5cnb2Lp844rxlBpUs3Fx00=
 github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c=

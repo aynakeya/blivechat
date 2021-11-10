@@ -19,6 +19,14 @@ func viewPrintWithTime(v *gocui.View, a interface{}) {
 	fmt.Fprintf(v, "%s >\n%s\n", time.Now().Format("2006/01/02 15:04:05"), a)
 }
 
+func PrintToDebug(g *gocui.Gui, a interface{}) {
+	view, err := g.View(ViewDebug)
+	if err != nil {
+		return
+	}
+	viewPrintWithTime(view, a)
+}
+
 func printDanmuColor(v *gocui.View, msg blivedm.DanmakuMessage) {
 	name := SetForegroundColor(HexToRGB(msg.UnameColor), msg.Uname)
 	medal := "[Unknown](0)"
@@ -43,7 +51,7 @@ func printDanmuNoColor(v *gocui.View, msg blivedm.DanmakuMessage) {
 }
 
 func PrintDanmu(v *gocui.View, msg blivedm.DanmakuMessage) {
-	if Config.DanmuColor {
+	if Config.VisualColorMode {
 		printDanmuColor(v, msg)
 	} else {
 		printDanmuNoColor(v, msg)

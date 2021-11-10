@@ -16,9 +16,9 @@ import (
 )
 
 func main() {
-	args :=  os.Args[1:]
+	args := os.Args[1:]
 
-	if len(args) <1 {
+	if len(args) < 1 {
 		fmt.Println("Usage blivechat <room_id> Optional[<uid> <sessdata> <bilijct>]")
 		return
 	}
@@ -27,7 +27,7 @@ func main() {
 		fmt.Println("Room id is not proper")
 		return
 	}
-	uid :=0
+	uid := 0
 	sessdata := ""
 	bilijct := ""
 	if len(args) >= 4 {
@@ -36,7 +36,10 @@ func main() {
 		bilijct = cast.ToString(args[3])
 	}
 	g := blivechat.CreateGUI()
-	defer g.Close()
+	defer func() {
+		g.Cursor = false
+		g.Close()
+	}()
 	cl := blivedm.BLiveWsClient{ShortId: roomId,
 		Account: blivedm.DanmuAccount{
 			UID:         uid,
@@ -44,9 +47,9 @@ func main() {
 			BilibiliJCT: bilijct,
 		},
 		HearbeatInterval: 25 * time.Second}
-	blivechat.SetKeybindings(g)
-	blivechat.SetupDanmuClient(g,&cl)
+	blivechat.SetupDanmuClient(g, &cl)
 	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
 		log.Panicln(err)
 	}
+	return
 }

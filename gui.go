@@ -11,13 +11,15 @@ func CreateGUI() *gocui.Gui {
 		log.Panicln(err)
 	}
 	g.Highlight = true
-	g.Cursor = true
-
 	g.SelFgColor = gocui.ColorWhite
 	g.SelFrameColor = gocui.ColorBlue
-	g.SetManagerFunc(Layout)
-	g.Update(func(gui *gocui.Gui) error {
-		return nil
-	})
+	addWidgets(g)
+	setKeybindings(g)
 	return g
+}
+
+func addWidgets(g *gocui.Gui) {
+	managers := ConfigLayouts(g)
+	managers = append(managers, gocui.ManagerFunc(MainLayout))
+	g.SetManager(managers...)
 }

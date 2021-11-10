@@ -6,12 +6,13 @@ var SendFormConfig *blivedm.DanmakuSendForm = &blivedm.DanmakuSendForm{
 	Bubble:   0,
 	Message:  "",
 	Color:    "16777215",
+	Mode:     1,
 	Fontsize: 25,
 	Rnd:      0,
 }
 
 var Config = &struct {
-	DanmuColor bool
+	VisualColorMode bool
 }{
-	DanmuColor: true,
+	VisualColorMode: false,
 }

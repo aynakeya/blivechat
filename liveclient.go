@@ -8,10 +8,10 @@ import (
 )
 
 var Client *blivedm.BLiveWsClient
+var ClientSet = make(chan int)
 
 func SetupDanmuClient(g *gocui.Gui, cl *blivedm.BLiveWsClient) {
 	Client = cl
-
 	Client.RegHandler(blivedm.CmdDanmaku, func(context *blivedm.Context) {
 		msg, _ := context.ToDanmakuMessage()
 		danmuV, _ := g.View(ViewDanmu)
@@ -31,44 +31,6 @@ func SetupDanmuClient(g *gocui.Gui, cl *blivedm.BLiveWsClient) {
 		g.Update(func(gui *gocui.Gui) error {
 			return nil
 		})
-	})
-
-	g.Update(func(gui *gocui.Gui) error {
-		debugV, err := g.View(ViewDebug)
-		if err != nil {
-			return err
-		}
-		go func() {
-			viewPrintWithTime(debugV, fmt.Sprintf("try get room info"))
-			viewPrintWithTime(debugV, fmt.Sprintf("GetRoomInfo: %t", Client.GetRoomInfo()))
-			g.Update(func(gui *gocui.Gui) error { return nil })
-			viewPrintWithTime(debugV, fmt.Sprintf("try danmu room info"))
-			viewPrintWithTime(debugV, fmt.Sprintf("GetDanmuInfo: %t", Client.GetDanmuInfo()))
-			g.Update(func(gui *gocui.Gui) error { return nil })
-			viewPrintWithTime(debugV, fmt.Sprintf("try connect to danmu server"))
-			viewPrintWithTime(debugV, fmt.Sprintf("ConnectToDanmuServer: %t", Client.ConnectDanmuServer()))
-			g.Update(func(gui *gocui.Gui) error { return nil })
-			roomV, err := g.View(ViewRoom)
-			if err != nil {
-				//viewPrintWithTime(debugV,err)
-				return
-			}
-			var upname string
-			if info, err := blivedm.ApiGetUpInfo(Client.RoomInfo.Uid); err != nil {
-				//viewPrintWithTime(debugV,err)
-				upname = "Unknown"
-			} else {
-				upname = info.Data.Name
-			}
-			viewPrint(roomV,
-				fmt.Sprintf("%s > %s | %s (%d) - Live: %t | %s (%d) | login as uid=%d",
-					Client.RoomInfo.ParentAreaName, Client.RoomInfo.AreaName,
-					Client.RoomInfo.Title, Client.RoomInfo.RoomId, Client.RoomInfo.LiveStatus == 1,
-					upname, Client.RoomInfo.Uid,
-					Client.Account.UID))
-			g.Update(func(gui *gocui.Gui) error { return nil })
-		}()
-		return nil
 	})
 
 	err := g.SetKeybinding(ViewSend, gocui.KeyEnter, gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error {
@@ -103,5 +65,43 @@ func SetupDanmuClient(g *gocui.Gui, cl *blivedm.BLiveWsClient) {
 	if err != nil {
 		return
 	}
+
+	g.Update(func(gui *gocui.Gui) error {
+		debugV, err := g.View(ViewDebug)
+		if err != nil {
+			return err
+		}
+		go func() {
+			viewPrintWithTime(debugV, fmt.Sprintf("try get room info"))
+			viewPrintWithTime(debugV, fmt.Sprintf("GetRoomInfo: %t", Client.GetRoomInfo()))
+			g.Update(func(gui *gocui.Gui) error { return nil })
+			viewPrintWithTime(debugV, fmt.Sprintf("try danmu room info"))
+			viewPrintWithTime(debugV, fmt.Sprintf("GetDanmuInfo: %t", Client.GetDanmuInfo()))
+			g.Update(func(gui *gocui.Gui) error { return nil })
+			viewPrintWithTime(debugV, fmt.Sprintf("try connect to danmu server"))
+			viewPrintWithTime(debugV, fmt.Sprintf("ConnectToDanmuServer: %t", Client.ConnectDanmuServer()))
+			g.Update(func(gui *gocui.Gui) error { return nil })
+			roomV, err := g.View(ViewRoom)
+			if err != nil {
+				//viewPrintWithTime(debugV,err)
+				return
+			}
+			var upname string
+			if info, err := blivedm.ApiGetUpInfo(Client.RoomInfo.Uid); err != nil {
+				upname = "Unknown"
+			} else {
+				upname = info.Data.Name
+			}
+			viewPrint(roomV,
+				fmt.Sprintf("%s > %s | %s (%d) - Live: %t | %s (%d) | login as uid=%d",
+					Client.RoomInfo.ParentAreaName, Client.RoomInfo.AreaName,
+					Client.RoomInfo.Title, Client.RoomInfo.RoomId, Client.RoomInfo.LiveStatus == 1,
+					upname, Client.RoomInfo.Uid,
+					Client.Account.UID))
+			ClientSet <- 1
+			g.Update(func(gui *gocui.Gui) error { return nil })
+		}()
+		return nil
+	})
 	return
 }
