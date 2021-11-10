@@ -1,6 +1,7 @@
 package blivechat
 
 import (
+	"fmt"
 	"github.com/aynakeya/blivedm"
 	"github.com/aynakeya/gocui"
 	"github.com/spf13/cast"
@@ -134,6 +135,18 @@ func ConfigLayouts(g *gocui.Gui) []gocui.Manager {
 		},
 		SetConfig: func(value string) {
 			SendFormConfig.Color = value
+			go func() {
+				resp, err := blivedm.ApiSetDanmuConfig(Client.Account, Client.RoomId,
+					"color", "0x"+IntToRGB(cast.ToInt(value)).ToHex())
+				if err != nil {
+					PrintToDebug(g, "Fail to set color")
+					return
+				}
+				PrintToDebug(g, fmt.Sprintf("set color result - result:%d msg: %s", resp.Code, resp.Message))
+				g.Update(func(gui *gocui.Gui) error {
+					return nil
+				})
+			}()
 		},
 	}
 	danmuColor.Option.SetIndexToValue(SendFormConfig.Color)
@@ -159,10 +172,22 @@ func ConfigLayouts(g *gocui.Gui) []gocui.Manager {
 			OptionValues: []string{"1"},
 		},
 		SetConfig: func(value string) {
-			SendFormConfig.Bubble = cast.ToInt(value)
+			SendFormConfig.Mode = cast.ToInt(value)
+			go func() {
+				resp, err := blivedm.ApiSetDanmuConfig(Client.Account, Client.RoomId,
+					"mode", value)
+				if err != nil {
+					PrintToDebug(g, "Fail to set mode")
+					return
+				}
+				PrintToDebug(g, fmt.Sprintf("set mode result - result:%d msg: %s", resp.Code, resp.Message))
+				g.Update(func(gui *gocui.Gui) error {
+					return nil
+				})
+			}()
 		},
 	}
-	danmuMode.Option.SetIndexToValue(cast.ToString(SendFormConfig.Bubble))
+	danmuMode.Option.SetIndexToValue(cast.ToString(SendFormConfig.Mode))
 	go func() {
 		_ = <-ClientSet
 		defer g.Update(func(gui *gocui.Gui) error {
@@ -196,7 +221,7 @@ func ConfigLayouts(g *gocui.Gui) []gocui.Manager {
 		}
 		danmuMode.Option.Options = modes
 		danmuMode.Option.OptionValues = modevals
-		danmuMode.Option.SetIndexToValue(cast.ToString(SendFormConfig.Bubble))
+		danmuMode.Option.SetIndexToValue(cast.ToString(SendFormConfig.Mode))
 
 		PrintToDebug(g, "Load room danmu config success")
 	}()

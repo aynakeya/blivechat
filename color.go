@@ -6,17 +6,21 @@ import (
 )
 
 type RGB struct {
-	r, g, b int
+	R, G, B int
+}
+
+func (c RGB) ToHex() string {
+	return fmt.Sprintf("%02x%02x%02x", c.R, c.G, c.B)
 }
 
 var RGBWhite = RGB{
-	r: 255,
-	g: 255,
-	b: 255,
+	R: 255,
+	G: 255,
+	B: 255,
 }
 
 func HexToRGB(hexColor string) (rgb RGB) {
-	rgb.r, rgb.g, rgb.b = 255, 255, 255
+	rgb.R, rgb.G, rgb.B = 255, 255, 255
 	if len(hexColor) < 6 {
 		return
 	}
@@ -27,25 +31,25 @@ func HexToRGB(hexColor string) (rgb RGB) {
 	if err != nil {
 		return
 	}
-	rgb.r = int(values >> 16)
-	rgb.g = int((values >> 8) & 0xFF)
-	rgb.b = int(values & 0xFF)
+	rgb.R = int(values >> 16)
+	rgb.G = int((values >> 8) & 0xFF)
+	rgb.B = int(values & 0xFF)
 	return
 }
 
 func IntToRGB(intColor int) (rgb RGB) {
-	rgb.r, rgb.g, rgb.b = 255, 255, 255
+	rgb.R, rgb.G, rgb.B = 255, 255, 255
 	values := uint64(intColor)
-	rgb.r = int(values >> 16)
-	rgb.g = int((values >> 8) & 0xFF)
-	rgb.b = int(values & 0xFF)
+	rgb.R = int(values >> 16)
+	rgb.G = int((values >> 8) & 0xFF)
+	rgb.B = int(values & 0xFF)
 	return
 }
 
 func SetForegroundColor(rgb RGB, msg string) string {
-	return fmt.Sprintf("\x1b[38;2;%d;%d;%dm%s\x1b[0m", rgb.r, rgb.g, rgb.b, msg)
+	return fmt.Sprintf("\x1b[38;2;%d;%d;%dm%s\x1b[0m", rgb.R, rgb.G, rgb.B, msg)
 }
 
 func SetBackgroundColor(rgb RGB, msg string) string {
-	return fmt.Sprintf("\x1b[48;2;%d;%d;%dm%s\x1b[0m", rgb.r, rgb.g, rgb.b, msg)
+	return fmt.Sprintf("\x1b[48;2;%d;%d;%dm%s\x1b[0m", rgb.R, rgb.G, rgb.B, msg)
 }
