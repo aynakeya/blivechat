@@ -56,23 +56,6 @@ func MainLayout(g *gocui.Gui) error {
 		})
 	}
 
-	if v, err := g.SetView(ViewSend, 0, maxY*6/8, maxX*5/8-1, maxY-1, 0); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = "Input"
-		v.Wrap = true
-		v.Editable = true
-		v.Autoscroll = true
-		g.Update(func(gui *gocui.Gui) error {
-			if _, err := g.SetCurrentView(ViewSend); err != nil {
-				return err
-			}
-			g.Cursor = true
-			return nil
-		})
-	}
-
 	if v, err := g.SetView(ViewConfig, maxX*5/8, maxY*6/8, maxX-1, maxY-1, 0); err != nil {
 		if err != gocui.ErrUnknownView {
 			return err
