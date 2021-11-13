@@ -19,6 +19,13 @@ func main() {
 	args := os.Args[1:]
 
 	if len(args) < 1 {
+		defer func() {
+			fmt.Print("Press entet to quit")
+			var a string
+			if _, err := fmt.Scanln(&a); err != nil {
+				return
+			}
+		}()
 		fmt.Println("Usage blivechat <room_id> Optional[<uid> <sessdata> <bilijct>]")
 		return
 	}

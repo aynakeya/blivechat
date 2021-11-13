@@ -107,6 +107,14 @@ func main() {
 			return
 		}
 	}()
+	var volume int
+	fmt.Println("Enter volume 0-100> ")
+	if _, err := fmt.Scanln(&volume); err != nil {
+		fmt.Println("fail to load volume")
+	}
+	if volume < 0 || volume > 100 {
+		volume = 100
+	}
 	fmt.Println("Enter room number> ")
 	var shortId string
 	if _, err := fmt.Scanln(&shortId); err != nil {
@@ -114,22 +122,25 @@ func main() {
 	}
 	fmt.Printf("Try starting %s\n", shortId)
 	roomId := GetRoomId(shortId)
-	if roomId == -1 {
-		fmt.Println("fail to get real room id, please check if you enter the wrong room id")
+	for roomId != -1 {
+		fmt.Println("Real room id", roomId)
+		durl := GetPlayUrl(roomId)
+		if durl == "" {
+			fmt.Println("fail to get url")
+			roomId = GetRoomId(shortId)
+			continue
+		}
+		fmt.Printf("Get url success %s\n", durl)
+		cmd := exec.Command("mpv", "--demuxer-max-back-bytes=16777216", "--demuxer-max-bytes=16777216",
+			"--no-video", fmt.Sprintf("--volume=%d", volume), durl)
+		cmd.Stdout = os.Stdout
+		cmd.Stdin = os.Stdin
+		cmd.Stderr = os.Stderr
+		err := cmd.Run()
+		if err != nil {
+			fmt.Println(err)
+		}
+		roomId = GetRoomId(shortId)
 	}
-	fmt.Println("Real room id", roomId)
-	durl := GetPlayUrl(roomId)
-	if durl == "" {
-		fmt.Println("fail to get url")
-	}
-	fmt.Printf("Get url success %s\n", durl)
-	cmd := exec.Command("mpv", "--demuxer-max-back-bytes=16777216", "--demuxer-max-bytes=16777216", "--no-video", durl)
-	cmd.Stdout = os.Stdout
-	cmd.Stdin = os.Stdin
-	cmd.Stderr = os.Stderr
-	err := cmd.Run()
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
+	fmt.Println("fail to get real room id, please check if you enter the wrong room id")
 }
