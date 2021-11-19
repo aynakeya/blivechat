@@ -17,6 +17,8 @@ import (
 	"time"
 )
 
+const DEFAULT_CONFIG_NAME = "blivechat.ini"
+
 type ConfigFile struct {
 	Uid         int
 	SessionData string
@@ -31,7 +33,7 @@ func saveToConfig(cfg ConfigFile) {
 	cfgFile.Section("blivechat").Key("VisualColorMode").SetValue(cast.ToString(cfg.VisualColorMode))
 	cfgFile.Section("blivechat").Key("SessionData").SetValue(cast.ToString(cfg.SessionData))
 	cfgFile.Section("blivechat").Key("BilibiliJCT").SetValue(cast.ToString(cfg.BilibiliJCT))
-	err := cfgFile.SaveTo("blivechat.ini")
+	err := cfgFile.SaveTo(DEFAULT_CONFIG_NAME)
 	if err != nil {
 		return
 	}
@@ -52,6 +54,11 @@ func startFromArgs(roomId int, args []string) *gocui.Gui {
 		uid = cast.ToInt(args[1])
 		sessdata = cast.ToString(args[2])
 		bilijct = cast.ToString(args[3])
+	} else {
+		g := startFromConfig(roomId, DEFAULT_CONFIG_NAME)
+		if g != nil {
+			return g
+		}
 	}
 	g := blivechat.CreateGUI()
 	cl := blivedm.BLiveWsClient{ShortId: roomId,
@@ -80,7 +87,6 @@ func startFromConfig(roomId int, filename string) *gocui.Gui {
 	}
 	cfgFile, err := ini.Load(filename)
 	if err != nil {
-		fmt.Printf("Fail to read file: %v", err)
 		return nil
 	}
 
@@ -134,20 +140,17 @@ func main() {
 	}
 	useConfig := false
 	configName := "blivechat.ini"
-	g = startFromConfig(roomId, configName)
-	if g == nil {
-		for _, arg := range args {
-			if strings.HasPrefix(arg, "--c") {
-				useConfig = true
-				configName = strings.ReplaceAll(arg, "--c=", "")
-				break
-			}
+	for _, arg := range args {
+		if strings.HasPrefix(arg, "--c") {
+			useConfig = true
+			configName = strings.ReplaceAll(arg, "--c=", "")
+			break
 		}
-		if useConfig {
-			g = startFromConfig(roomId, configName)
-		} else {
-			g = startFromArgs(roomId, args)
-		}
+	}
+	if useConfig {
+		g = startFromConfig(roomId, configName)
+	} else {
+		g = startFromArgs(roomId, args)
 	}
 	if g == nil {
 		return
