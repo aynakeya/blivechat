@@ -4,5 +4,7 @@
 
 ```cmd
 cd blivechat/chat
-go build main.go 
+go build blivechat.go
+# windows cross compile
+CGO_ENABLED=0 GOOS=windows GOARCH=amd64 go build blivechat.go
 ```
