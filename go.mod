@@ -11,6 +11,6 @@ require (
 )
 
 //replace (
-//	github.com/aynakeya/blivedm => ../blivedm
-//	github.com/aynakeya/gocui => ../gocui
+	//github.com/aynakeya/blivedm => ../blivedm
+	//github.com/aynakeya/gocui => ../gocui
 //)
