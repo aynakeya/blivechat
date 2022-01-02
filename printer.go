@@ -2,8 +2,8 @@ package blivechat
 
 import (
 	"fmt"
+	"github.com/awesome-gocui/gocui"
 	"github.com/aynakeya/blivedm"
-	"github.com/aynakeya/gocui"
 	"time"
 )
 

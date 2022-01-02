@@ -1,7 +1,7 @@
 package blivechat
 
 import (
-	"github.com/aynakeya/gocui"
+	"github.com/awesome-gocui/gocui"
 )
 
 func quit(g *gocui.Gui, v *gocui.View) error {

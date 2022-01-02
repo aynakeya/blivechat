@@ -7,8 +7,8 @@ package main
 import (
 	"blivechat"
 	"fmt"
+	"github.com/awesome-gocui/gocui"
 	"github.com/aynakeya/blivedm"
-	"github.com/aynakeya/gocui"
 	"github.com/spf13/cast"
 	"gopkg.in/ini.v1"
 	"log"

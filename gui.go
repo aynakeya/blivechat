@@ -1,7 +1,7 @@
 package blivechat
 
 import (
-	"github.com/aynakeya/gocui"
+	"github.com/awesome-gocui/gocui"
 	"log"
 )
 

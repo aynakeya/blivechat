@@ -2,7 +2,7 @@ package blivechat
 
 import (
 	"fmt"
-	"github.com/aynakeya/gocui"
+	"github.com/awesome-gocui/gocui"
 )
 
 type DynamicSizeFunc func(g *gocui.Gui) (x0, y0, x1, y1 int)

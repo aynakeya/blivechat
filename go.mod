@@ -3,6 +3,7 @@ module blivechat
 go 1.16
 
 require (
+	github.com/awesome-gocui/gocui v1.0.2-0.20211230124446-e8e15faffa6b
 	github.com/aynakeya/blivedm v0.1.3
 	github.com/aynakeya/gocui v1.0.3
 	github.com/go-resty/resty/v2 v2.6.0
@@ -11,6 +12,6 @@ require (
 )
 
 //replace (
-	//github.com/aynakeya/blivedm => ../blivedm
-	//github.com/aynakeya/gocui => ../gocui
+//github.com/aynakeya/blivedm => ../blivedm
+//github.com/aynakeya/gocui => ../gocui
 //)
