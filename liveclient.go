@@ -8,12 +8,39 @@ import (
 	"time"
 )
 
+const DanmuCacheSize = 512
+
 var Client *blivedm.BLiveWsClient
 var ClientSet = make(chan int)
 
+var DanmuCache = struct {
+	Size  int
+	Index int
+	Cache []blivedm.DanmakuMessage
+}{
+	DanmuCacheSize,
+	0,
+	make([]blivedm.DanmakuMessage, DanmuCacheSize, DanmuCacheSize),
+}
+
 func danmuMsgRecv(context *blivedm.Context) {
 	msg, _ := context.ToDanmakuMessage()
-	util.PrintDanmu(MainGui, ViewDanmu, Config.VisualColorMode, Config.ShowMedal, msg)
+	DanmuCache.Cache[DanmuCache.Index] = msg
+	DanmuCache.Index++
+	if DanmuCache.Index >= DanmuCache.Size {
+		view, err := MainGui.View(ViewDanmu)
+		if err != nil {
+			return
+		}
+		view.Clear()
+		DanmuCache.Index = 0
+		for _, cmsg := range DanmuCache.Cache {
+			util.PrintDanmu(MainGui, ViewDanmu, Config.VisualColorMode, Config.ShowMedal, cmsg)
+		}
+		util.ViewPrintln(MainGui, ViewDebug, "clear called")
+	} else {
+		util.PrintDanmu(MainGui, ViewDanmu, Config.VisualColorMode, Config.ShowMedal, msg)
+	}
 	MainGui.Update(func(gui *gocui.Gui) error {
 		return nil
 	})
