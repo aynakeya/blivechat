@@ -1,188 +1,279 @@
 package blivechat
 
 import (
+	"blivechat/util"
+	"blivechat/widget"
 	"fmt"
 	"github.com/awesome-gocui/gocui"
 	"github.com/aynakeya/blivedm"
 	"github.com/spf13/cast"
-	"log"
 )
 
-func MainLayout(g *gocui.Gui) error {
-	maxX, maxY := g.Size()
-	if v, err := g.SetView(ViewRoom, 0, 0, maxX-1, maxY/8-1, 0); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = "RoomInfo"
-		v.Wrap = true
-		v.Editable = false
-	}
-
-	if v, err := g.SetView(ViewDanmu, 0, maxY/8, maxX*5/8-1, maxY*6/8-1, 0); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = "Danmu"
-		v.Wrap = true
-		v.Editable = false
-		v.Autoscroll = true
-	}
-	if v, err := g.SetView(ViewDebug, maxX*5/8, maxY/8, maxX-1, maxY*6/8-1, 0); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = "Debug"
-		v.Wrap = true
-		v.Editable = false
-		v.Autoscroll = true
-		log.SetOutput(v)
-	}
-
-	if v, err := g.SetView(ViewSend, 0, maxY*6/8, maxX*5/8-1, maxY-1, 0); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = "Input"
-		v.Wrap = true
-		v.Editable = true
-		v.Autoscroll = true
-		g.Update(func(gui *gocui.Gui) error {
-			if _, err := g.SetCurrentView(ViewSend); err != nil {
-				return err
-			}
-			g.Cursor = true
-			return nil
-		})
-	}
-
-	if v, err := g.SetView(ViewConfig, maxX*5/8, maxY*6/8, maxX-1, maxY-1, 0); err != nil {
-		if err != gocui.ErrUnknownView {
-			return err
-		}
-		v.Title = "Config"
-		v.Wrap = true
-		v.Editable = false
-		v.Autoscroll = true
-	}
-
-	return nil
+func createLayoutManager() {
+	createMainLayout()
+	createConfigLayout()
 }
 
-func ConfigLayouts(g *gocui.Gui) []gocui.Manager {
-	enableColor := &ConfigOptionPanel{
-		BaseWidget: BaseWidget{
-			ViewConfigVisualColorMode,
-			func(g *gocui.Gui) (x0, y0, x1, y1 int) {
-				maxX, maxY := g.Size()
-				xa, ya, xb, yb := maxX*5/8, maxY*6/8, maxX-1, maxY-1
-				dx, dy := xb-xa, yb-ya
-				return xa + dx/8, ya + dy*2/8, xa + dx*7/8, ya + dy*7/8
+var roomInfoView, danmuView, debugView, sendView, configView *widget.CommonPanel
+
+func createMainLayout() {
+	roomInfoView = &widget.CommonPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewRoom,
+			ParentViewName: "",
+			DisplayName:    "RoomInfo",
+			GetSize: func(x, y int) (x0, y0, x1, y1 int) {
+				return 0, 0, x - 1, y/8 - 1
 			},
 		},
-		LinkedWidget: LinkedWidget{
-			ViewConfigDanmuMode,
-			ViewConfigDanmuColor,
+		LinkedWidget: widget.LinkedWidget{
+			NextViewName: ViewDanmu,
 		},
-		DisplayName: "VisualMode",
-		Option: ConfigOption{
-			index:        0,
-			Options:      []string{"On", "Off"},
-			OptionValues: []string{"1", "0"},
-		},
-		SetConfig: func(value string) {
-			Config.VisualColorMode = value == "1"
+		SwitchKey: widget.KeyCombo{
+			Key:      gocui.KeyTab,
+			Modifier: gocui.ModNone,
 		},
 	}
-	enableColor.Option.SetIndexToValue("0")
 
-	danmuColor := &ConfigOptionPanel{
-		BaseWidget: BaseWidget{
-			ViewConfigDanmuColor,
-			func(g *gocui.Gui) (x0, y0, x1, y1 int) {
-				maxX, maxY := g.Size()
-				xa, ya, xb, yb := maxX*5/8, maxY*6/8, maxX-1, maxY-1
-				dx, dy := xb-xa, yb-ya
-				return xa + dx/8, ya + dy*2/8, xa + dx*7/8, ya + dy*7/8
+	danmuView = &widget.CommonPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewDanmu,
+			ParentViewName: "",
+			DisplayName:    "Danmu",
+			GetSize: func(x, y int) (x0, y0, x1, y1 int) {
+				return 0, y / 8, x*5/8 - 1, y*6/8 - 1
 			},
 		},
-		LinkedWidget: LinkedWidget{
-			ViewConfigVisualColorMode,
-			ViewConfigDanmuMode,
+		LinkedWidget: widget.LinkedWidget{
+			NextViewName: ViewDebug,
 		},
-		DisplayName: "DanmuColor",
-		Option: ConfigOption{
-			index:        0,
-			Options:      []string{"白色"},
-			OptionValues: []string{"16777215"},
+		SwitchKey: widget.KeyCombo{
+			Key:      gocui.KeyTab,
+			Modifier: gocui.ModNone,
 		},
-		SetConfig: func(value string) {
-			SendFormConfig.Color = value
+	}
+
+	debugView = &widget.CommonPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewDebug,
+			ParentViewName: "",
+			DisplayName:    "Debug",
+			GetSize: func(x, y int) (x0, y0, x1, y1 int) {
+				return x * 5 / 8, y / 8, x - 1, y*6/8 - 1
+			},
+		},
+		LinkedWidget: widget.LinkedWidget{
+			NextViewName: ViewSend,
+		},
+		SwitchKey: widget.KeyCombo{
+			Key:      gocui.KeyTab,
+			Modifier: gocui.ModNone,
+		},
+	}
+
+	sendView = &widget.CommonPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewSend,
+			ParentViewName: "",
+			DisplayName:    "Input",
+			GetSize: func(x, y int) (x0, y0, x1, y1 int) {
+				return 0, y * 6 / 8, x*5/8 - 1, y - 1
+			},
+		},
+		LinkedWidget: widget.LinkedWidget{
+			NextViewName: ViewConfig,
+		},
+		SwitchKey: widget.KeyCombo{
+			Key:      gocui.KeyTab,
+			Modifier: gocui.ModNone,
+		},
+	}
+
+	configView = &widget.CommonPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewConfig,
+			ParentViewName: "",
+			DisplayName:    "Config",
+			GetSize: func(x, y int) (x0, y0, x1, y1 int) {
+				return x * 5 / 8, y * 6 / 8, x - 1, y - 1
+			},
+		},
+		LinkedWidget: widget.LinkedWidget{
+			NextViewName: ViewRoom,
+		},
+		SwitchKey: widget.KeyCombo{
+			Key:      gocui.KeyTab,
+			Modifier: gocui.ModNone,
+		},
+	}
+
+	MainManager = append(MainManager, roomInfoView, danmuView, debugView, sendView, configView)
+}
+
+func createConfigLayout() {
+	sizeFunc := func(x, y int) (x0, y0, x1, y1 int) {
+		xa, ya, xb, yb := x*5/8, y*6/8, x-1, y-1
+		dx, dy := xb-xa, yb-ya
+		return xa + dx/8, ya + dy*2/8, xa + dx*7/8, ya + dy*7/8
+	}
+
+	enableColor := &widget.ConfigOptionPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewConfigVisualColorMode,
+			ParentViewName: ViewConfig,
+			DisplayName:    "VisualMode",
+			GetSize:        sizeFunc,
+		},
+		DoubleLinkedWidget: widget.DoubleLinkedWidget{
+			PrevViewName: ViewConfigDanmuMode,
+			NextViewName: ViewConfigShowMedal,
+		},
+		Option: widget.NewConfigOption(map[string]interface{}{
+			"On":  true,
+			"Off": false,
+		}),
+		SetConfig: func(value interface{}, origin *widget.ConfigOptionPanel) {
+			Config.VisualColorMode = value.(bool)
+		},
+	}
+	enableColor.Option.SetByValue(Config.VisualColorMode)
+
+	showMedal := &widget.ConfigOptionPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewConfigShowMedal,
+			ParentViewName: ViewConfig,
+			DisplayName:    "ShowMedal",
+			GetSize:        sizeFunc,
+		},
+		DoubleLinkedWidget: widget.DoubleLinkedWidget{
+			PrevViewName: ViewConfigVisualColorMode,
+			NextViewName: ViewConfigShowDebug,
+		},
+		Option: widget.NewConfigOption(map[string]interface{}{
+			"On":  true,
+			"Off": false,
+		}),
+		SetConfig: func(value interface{}, origin *widget.ConfigOptionPanel) {
+			Config.ShowMedal = value.(bool)
+		},
+	}
+
+	showMedal.Option.SetByValue(Config.ShowMedal)
+
+	showDebug := &widget.ConfigOptionPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewConfigShowDebug,
+			ParentViewName: ViewConfig,
+			DisplayName:    "ShowDebug",
+			GetSize:        sizeFunc,
+		},
+		DoubleLinkedWidget: widget.DoubleLinkedWidget{
+			PrevViewName: ViewConfigShowMedal,
+			NextViewName: ViewConfigDanmuColor,
+		},
+		Option: widget.NewConfigOption(map[string]interface{}{
+			"On":  true,
+			"Off": false,
+		}),
+		SetConfig: func(value interface{}, origin *widget.ConfigOptionPanel) {
+			Config.ShowDebug = value.(bool)
+			if Config.ShowDebug {
+				danmuView.NextViewName = ViewDebug
+				danmuView.GetSize = func(x, y int) (x0, y0, x1, y1 int) {
+					return 0, y / 8, x*5/8 - 1, y*6/8 - 1
+				}
+			} else {
+				danmuView.NextViewName = ViewSend
+				danmuView.GetSize = func(x, y int) (x0, y0, x1, y1 int) {
+					return 0, y / 8, x - 1, y*6/8 - 1
+
+				}
+			}
+			MainGui.Update(func(gui *gocui.Gui) error {
+				gui.SetViewOnTop(ViewDanmu)
+				return nil
+			})
+		},
+	}
+
+	showDebug.Option.SetByValue(Config.ShowDebug)
+
+	danmuColor := &widget.ConfigOptionPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewConfigDanmuColor,
+			ParentViewName: ViewConfig,
+			DisplayName:    "DanmuColor",
+			GetSize:        sizeFunc,
+		},
+		DoubleLinkedWidget: widget.DoubleLinkedWidget{
+			PrevViewName: ViewConfigShowMedal,
+			NextViewName: ViewConfigDanmuMode,
+		},
+		Option: widget.NewConfigOption(map[string]interface{}{
+			"白色": "16777215",
+		}),
+		SetConfig: func(value interface{}, origin *widget.ConfigOptionPanel) {
+			SendFormConfig.Color = value.(string)
 			go func() {
 				resp, err := blivedm.ApiSetDanmuConfig(Client.Account, Client.RoomId,
-					"color", "0x"+IntToRGB(cast.ToInt(value)).ToHex())
+					"color", "0x"+util.IntToRGB(cast.ToInt(value)).ToHex())
 				if err != nil {
-					PrintToDebug(g, "Fail to set color")
+					util.ViewPrintWithTime(MainGui, ViewDebug, "Fail to set color")
 					return
 				}
-				PrintToDebug(g, fmt.Sprintf("set color result - result:%d msg: %s", resp.Code, resp.Message))
-				g.Update(func(gui *gocui.Gui) error {
+				util.ViewPrintWithTime(MainGui, ViewDebug, fmt.Sprintf("set color result - result:%d msg: %s", resp.Code, resp.Message))
+				MainGui.Update(func(gui *gocui.Gui) error {
 					return nil
 				})
 			}()
 		},
 	}
-	danmuColor.Option.SetIndexToValue(SendFormConfig.Color)
+	danmuColor.Option.SetByValue(SendFormConfig.Color)
 
-	danmuMode := &ConfigOptionPanel{
-		BaseWidget: BaseWidget{
-			ViewConfigDanmuMode,
-			func(g *gocui.Gui) (x0, y0, x1, y1 int) {
-				maxX, maxY := g.Size()
-				xa, ya, xb, yb := maxX*5/8, maxY*6/8, maxX-1, maxY-1
-				dx, dy := xb-xa, yb-ya
-				return xa + dx/8, ya + dy*2/8, xa + dx*7/8, ya + dy*7/8
-			},
+	danmuMode := &widget.ConfigOptionPanel{
+		BaseWidget: widget.BaseWidget{
+			ViewName:       ViewConfigDanmuMode,
+			ParentViewName: ViewConfig,
+			DisplayName:    "DanmuMode",
+			GetSize:        sizeFunc,
 		},
-		LinkedWidget: LinkedWidget{
-			ViewConfigDanmuColor,
-			ViewConfigVisualColorMode,
+		DoubleLinkedWidget: widget.DoubleLinkedWidget{
+			PrevViewName: ViewConfigDanmuColor,
+			NextViewName: ViewConfigVisualColorMode,
 		},
-		DisplayName: "DanmuMode",
-		Option: ConfigOption{
-			index:        0,
-			Options:      []string{"滚动"},
-			OptionValues: []string{"1"},
-		},
-		SetConfig: func(value string) {
-			SendFormConfig.Mode = cast.ToInt(value)
+		Option: widget.NewConfigOption(map[string]interface{}{
+			"滚动": 1,
+		}),
+		SetConfig: func(value interface{}, origin *widget.ConfigOptionPanel) {
+			SendFormConfig.Mode = value.(int)
 			go func() {
 				resp, err := blivedm.ApiSetDanmuConfig(Client.Account, Client.RoomId,
-					"mode", value)
+					"mode", cast.ToString(value))
 				if err != nil {
-					PrintToDebug(g, "Fail to set mode")
+					util.ViewPrintWithTime(MainGui, ViewDebug, "Fail to set mode")
 					return
 				}
-				PrintToDebug(g, fmt.Sprintf("set mode result - result:%d msg: %s", resp.Code, resp.Message))
-				g.Update(func(gui *gocui.Gui) error {
+				util.ViewPrintWithTime(MainGui, ViewDebug, fmt.Sprintf("set mode result - result:%d msg: %s", resp.Code, resp.Message))
+				MainGui.Update(func(gui *gocui.Gui) error {
 					return nil
 				})
 			}()
 		},
 	}
-	danmuMode.Option.SetIndexToValue(cast.ToString(SendFormConfig.Mode))
+	danmuMode.Option.SetByValue(SendFormConfig.Mode)
+
 	go func() {
 		_ = <-ClientSet
-		defer g.Update(func(gui *gocui.Gui) error {
+		defer MainGui.Update(func(gui *gocui.Gui) error {
 			return nil
 		})
 		config, err := blivedm.ApiGetRoomDanmuConfig(Client.Account, Client.RoomId)
 		if err != nil || config.Code != 0 {
-			PrintToDebug(g, "Load room danmu config fail")
+			util.ViewPrintWithTime(MainGui, ViewDebug, "Load room danmu config fail")
 			return
 		}
 		colors := make([]string, 0)
-		colorvals := make([]string, 0)
+		colorvals := make([]interface{}, 0)
 		for _, group := range config.Data.Group {
 			for _, color1 := range group.Color {
 				if color1.Status == 1 {
@@ -193,20 +284,22 @@ func ConfigLayouts(g *gocui.Gui) []gocui.Manager {
 		}
 		danmuColor.Option.Options = colors
 		danmuColor.Option.OptionValues = colorvals
-		danmuColor.Option.SetIndexToValue(SendFormConfig.Color)
+		danmuColor.Option.SetByValue(SendFormConfig.Color)
 		modes := make([]string, 0)
-		modevals := make([]string, 0)
+		modevals := make([]interface{}, 0)
 		for _, mode := range config.Data.Mode {
 			if mode.Status == 1 {
 				modes = append(modes, mode.Name)
-				modevals = append(modevals, cast.ToString(mode.Mode))
+				modevals = append(modevals, mode.Mode)
 			}
 		}
 		danmuMode.Option.Options = modes
 		danmuMode.Option.OptionValues = modevals
-		danmuMode.Option.SetIndexToValue(cast.ToString(SendFormConfig.Mode))
+		danmuMode.Option.SetByValue(SendFormConfig.Mode)
 
-		PrintToDebug(g, "Load room danmu config success")
+		util.ViewPrintWithTime(MainGui, ViewDebug, "Load room danmu config success")
 	}()
-	return []gocui.Manager{enableColor, danmuColor, danmuMode}
+
+	MainManager = append(MainManager, enableColor, showMedal, showDebug, danmuColor, danmuMode)
+	return
 }

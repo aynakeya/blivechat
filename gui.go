@@ -5,21 +5,36 @@ import (
 	"log"
 )
 
-func CreateGUI() *gocui.Gui {
-	g, err := gocui.NewGui(gocui.OutputTrue, false)
+var MainGui *gocui.Gui
+var MainManager []gocui.Manager
+
+func initializeGUI() error {
+	view, err := MainGui.View(ViewSend)
+	if err != nil {
+		return err
+	}
+	view.Editable = true
+	return nil
+}
+
+func CreateGUI() (err error) {
+	MainGui, err = gocui.NewGui(gocui.OutputTrue, false)
+	MainManager = make([]gocui.Manager, 0)
 	if err != nil {
 		log.Panicln(err)
 	}
-	g.Highlight = true
-	g.SelFgColor = gocui.ColorWhite
-	g.SelFrameColor = gocui.ColorBlue
-	addWidgets(g)
-	setKeybindings(g)
-	return g
-}
+	MainGui.Highlight = true
+	MainGui.SelFgColor = gocui.ColorWhite
+	MainGui.SelFrameColor = gocui.ColorBlue
+	createLayoutManager()
+	MainGui.SetManager(MainManager...)
+	setKeyBindings()
 
-func addWidgets(g *gocui.Gui) {
-	managers := ConfigLayouts(g)
-	managers = append(managers, gocui.ManagerFunc(MainLayout))
-	g.SetManager(managers...)
+	MainGui.Update(func(gui *gocui.Gui) error {
+		if err := initializeGUI(); err != nil {
+			return err
+		}
+		return nil
+	})
+	return
 }

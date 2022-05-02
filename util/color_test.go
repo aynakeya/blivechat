@@ -1,4 +1,4 @@
-package blivechat
+package util
 
 import (
 	"fmt"
