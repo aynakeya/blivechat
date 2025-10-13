@@ -3,7 +3,10 @@ package tabs
 import (
 	"blivechat/model"
 	"blivechat/ui"
+	"blivechat/ui/got"
 	"blivechat/ui/renderer"
+	"github.com/AynaLivePlayer/blivedm-go/api"
+	"github.com/charmbracelet/log"
 	"strings"
 
 	"github.com/charmbracelet/bubbles/textarea"
@@ -57,7 +60,12 @@ func (m *ChatTab) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			text := strings.TrimSpace(m.input.Value())
 			if text != "" {
-				m.appendLine(text)
+				go func() {
+					err := got.Backend.SendDanmuku(api.DanmakuRequest{Msg: text})
+					if err != nil {
+						log.Errorf("send danmu failed: %v", err)
+					}
+				}()
 				m.input.Reset()
 			}
 		default:
@@ -79,6 +87,8 @@ func (m *ChatTab) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.appendLine(m.renderer.GuardBuy(msg))
 	case *model.SuperChat:
 		m.appendLine(m.renderer.SuperChat(msg))
+	case *model.InteractWord:
+		m.appendLine(m.renderer.InteractWord(msg))
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		m.viewport.Width = m.width - 2
@@ -103,6 +113,9 @@ func (m *ChatTab) View() string {
 }
 
 func (m *ChatTab) appendLine(line string) {
+	if line == "" {
+		return
+	}
 	m.lines = append(m.lines, line)
 	m.refreshViewport()
 	m.viewport.GotoBottom()
@@ -111,15 +124,12 @@ func (m *ChatTab) appendLine(line string) {
 func (m *ChatTab) refreshViewport() {
 	content := strings.Join(m.lines, "\n")
 
-	// Step 1: 词级换行（ANSI-aware）
 	ww := wordwrap.NewWriter(m.viewport.Width)
 	ww.KeepNewlines = true // 保留你原本拼好的换行
 	_, _ = ww.Write([]byte(content))
 	_ = ww.Close()
 	softWrapped := ww.String()
 
-	// Step 2: 硬折行（ANSI-aware）
-	// 解决没有空格的极长行（中文长句、URL、连续表情）仍然可能超宽的问题
 	final := wrap.String(softWrapped, m.viewport.Width)
 
 	m.viewport.SetContent(final)

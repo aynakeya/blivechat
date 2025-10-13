@@ -55,4 +55,10 @@ type Styles struct {
 	GuardUser  lipgloss.Style
 	GuardLevel lipgloss.Style
 	GuardPrice lipgloss.Style
+
+	// Guard Badge
+	GuardBadgeBase lipgloss.Style // 徽标底样式（边框/间距）
+	GuardCaptain   lipgloss.Style // Lv1 舰长
+	GuardAdmiral   lipgloss.Style // Lv2 提督
+	GuardGovernor  lipgloss.Style // Lv3 总督
 }

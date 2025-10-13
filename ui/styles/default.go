@@ -46,5 +46,15 @@ func NewDefaultStyles() *Styles {
 		GuardUser:  lipgloss.NewStyle().Foreground(lipgloss.Color("#E5E7EB")).Bold(true),
 		GuardLevel: lipgloss.NewStyle().Foreground(lipgloss.Color("#60A5FA")).Bold(true),
 		GuardPrice: lipgloss.NewStyle().Foreground(lipgloss.Color("#F59E0B")).Bold(true),
+
+		GuardBadgeBase: lipgloss.NewStyle().
+			Border(lipgloss.RoundedBorder()).
+			BorderForeground(lipgloss.Color("#475569")). // 细灰边
+			Padding(0, 1).
+			MarginRight(1),
+
+		GuardCaptain:  lipgloss.NewStyle().Foreground(lipgloss.Color("#60A5FA")).Bold(true), // 蓝
+		GuardAdmiral:  lipgloss.NewStyle().Foreground(lipgloss.Color("#A78BFA")).Bold(true), // 紫
+		GuardGovernor: lipgloss.NewStyle().Foreground(lipgloss.Color("#F59E0B")).Bold(true), // 橙
 	}
 }

@@ -21,4 +21,5 @@ type ChatRenderer interface {
 	GuardBuy(msg *model.GuardBuy) string
 	SuperChat(msg *model.SuperChat) string
 	SystemMsg(msg *model.SystemMsg) string
+	InteractWord(msg *model.InteractWord) string
 }

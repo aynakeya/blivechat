@@ -6,6 +6,7 @@ import (
 	"blivechat/ui/styles"
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
+	"github.com/charmbracelet/log"
 	"time"
 )
 
@@ -45,12 +46,26 @@ func (r *DefaultRenderer) Medal(name string, level int, colorDec uint32) string 
 	c := int2color(colorDec)
 	left := r.style.MedalBracket.Render("[")
 	right := r.style.MedalBracket.Render("]")
-	body := lipgloss.JoinHorizontal(lipgloss.Left,
+	body := lipgloss.JoinHorizontal(lipgloss.Top,
 		r.style.MedalName.Foreground(c).Render(name),
 		lipgloss.NewStyle().Render(" "),
 		r.style.MedalLevel.Foreground(c).Render(fmt.Sprintf("Lv%d", level)),
 	)
 	return left + body + right + " "
+}
+
+// 渲染大航海徽标；0 不显示，1=舰长 2=提督 3=总督
+func (r *DefaultRenderer) guardBadge(level int) string {
+	switch level {
+	case 1:
+		return r.style.GuardGovernor.Render("总")
+	case 2:
+		return r.style.GuardAdmiral.Render("提")
+	case 3:
+		return r.style.GuardCaptain.Render("舰")
+	default:
+		return ""
+	}
 }
 
 func (r *DefaultRenderer) Danmuku(msg *model.Danmaku) string {
@@ -60,10 +75,12 @@ func (r *DefaultRenderer) Danmuku(msg *model.Danmaku) string {
 		medalColor uint32
 		dmColor    int
 		username   string
+		guardLv    int
 	)
 	username = ""
 	if msg.Sender != nil {
 		username = msg.Sender.Uname
+		guardLv = msg.Sender.GuardLevel // ← 读取大航海等级（0/1/2/3）
 		if msg.Sender.Medal != nil {
 			medalName = msg.Sender.Medal.Name
 			medalLevel = msg.Sender.Medal.Level
@@ -72,9 +89,20 @@ func (r *DefaultRenderer) Danmuku(msg *model.Danmaku) string {
 	}
 	ts := r.renderTimestamp(msg.Timestamp)
 
+	// 新增：渲染大航海徽标
+	guard := ""
+	if guardLv > 0 {
+		guard = r.guardBadge(guardLv) + " "
+	}
+
 	medal := r.Medal(medalName, medalLevel, medalColor)
 
-	user := r.style.Username.Render(username)
+	usernameStyle := r.style.Username
+	if msg.Sender.UserColor != 0 {
+		usernameStyle = usernameStyle.Foreground(int2color(msg.Sender.UserColor))
+	}
+	user := usernameStyle.Render(username)
+
 	if msg.Extra != nil {
 		dmColor = msg.Extra.Color
 	}
@@ -84,7 +112,7 @@ func (r *DefaultRenderer) Danmuku(msg *model.Danmaku) string {
 
 	}
 	dm := dmStyle.Render(msg.Content)
-	return fmt.Sprintf("%s %s%s: %s", ts, medal, user, dm)
+	return fmt.Sprintf("%s %s%s%s: %s", ts, medal, guard, user, dm)
 }
 
 func (r *DefaultRenderer) LiveStart(msg *model.LiveStart) string {
@@ -111,8 +139,8 @@ func (r *DefaultRenderer) Gift(msg *model.Gift) string {
 		price = r.style.GiftPrice.Faint(true).Render("(银瓜子)")
 	}
 
-	core := lipgloss.JoinHorizontal(lipgloss.Left, tag, lipgloss.NewStyle().Render(" "), user, lipgloss.NewStyle().Render(" 赠送 "), name, lipgloss.NewStyle().Render(" "), cnt, lipgloss.NewStyle().Render(" "), price)
-	return lipgloss.JoinHorizontal(lipgloss.Left, tsv, lipgloss.NewStyle().Render(" "), core)
+	core := lipgloss.JoinHorizontal(lipgloss.Top, tag, lipgloss.NewStyle().Render(" "), user, lipgloss.NewStyle().Render(" 赠送 "), name, lipgloss.NewStyle().Render(" "), cnt, lipgloss.NewStyle().Render(" "), price)
+	return lipgloss.JoinHorizontal(lipgloss.Top, tsv, lipgloss.NewStyle().Render(" "), core)
 }
 
 func (r *DefaultRenderer) GuardBuy(msg *model.GuardBuy) string {
@@ -122,12 +150,14 @@ func (r *DefaultRenderer) GuardBuy(msg *model.GuardBuy) string {
 	lv := r.style.GuardLevel.Render(fmt.Sprintf("Lv%d", msg.GuardLevel))
 	price := r.style.GuardPrice.Render(fmt.Sprintf("¥%.2f", float64(msg.Price)/1000.0))
 
-	core := lipgloss.JoinHorizontal(lipgloss.Left, tag, lipgloss.NewStyle().Render(" "), user, lipgloss.NewStyle().Render(" 开通 "), lv, lipgloss.NewStyle().Render(" "), price)
-	return lipgloss.JoinHorizontal(lipgloss.Left, tsv, lipgloss.NewStyle().Render(" "), core)
+	core := lipgloss.JoinHorizontal(lipgloss.Top, tag, lipgloss.NewStyle().Render(" "), user, lipgloss.NewStyle().Render(" 开通 "), lv, lipgloss.NewStyle().Render(" "), price)
+	return lipgloss.JoinHorizontal(lipgloss.Top, tsv, lipgloss.NewStyle().Render(" "), core)
 }
 
 func (r *DefaultRenderer) SuperChat(msg *model.SuperChat) string {
 	tsv := r.renderTimestamp(msg.Ts)
+
+	log.Info(msg)
 
 	container := r.style.SCContainer
 	// todo: use sc background color
@@ -140,8 +170,8 @@ func (r *DefaultRenderer) SuperChat(msg *model.SuperChat) string {
 	user := r.style.SCUser.Render(msg.UserInfo.Uname)
 	text := r.style.SCMsg.Render(msg.Message)
 
-	core := lipgloss.JoinHorizontal(lipgloss.Left, tag, lipgloss.NewStyle().Render(" "), price, lipgloss.NewStyle().Render(" "), user, lipgloss.NewStyle().Render(": "), text)
-	return lipgloss.JoinHorizontal(lipgloss.Left, tsv, lipgloss.NewStyle().Render(" "), container.Render(core))
+	core := lipgloss.JoinHorizontal(lipgloss.Top, tag, lipgloss.NewStyle().Render(" "), price, lipgloss.NewStyle().Render(" "), user, lipgloss.NewStyle().Render(": "), text)
+	return lipgloss.JoinHorizontal(lipgloss.Top, tsv, lipgloss.NewStyle().Render(" "), container.Render(core))
 }
 
 func (r *DefaultRenderer) SystemMsg(msg *model.SystemMsg) string {
@@ -155,5 +185,28 @@ func (r *DefaultRenderer) SystemMsg(msg *model.SystemMsg) string {
 	default:
 		body = r.style.SystemInfo.Render(msg.Msg)
 	}
-	return lipgloss.JoinHorizontal(lipgloss.Left, ts, lipgloss.NewStyle().Render(" "), body)
+	return lipgloss.JoinHorizontal(lipgloss.Top, ts, lipgloss.NewStyle().Render(" "), body)
+}
+
+func (r *DefaultRenderer) InteractWord(msg *model.InteractWord) string {
+	if msg.MsgType != 1 {
+		return ""
+	}
+	ts := r.renderTimestamp(int64(msg.Timestamp))
+	name := msg.Uname
+	userStyle := r.style.Username
+	if msg.Uinfo.Base.NameColor != 0 {
+		userStyle = userStyle.Foreground(int2color(uint32(msg.Uinfo.Base.NameColor)))
+	}
+	user := userStyle.Render(name)
+
+	// 新增：渲染大航海徽标
+	guard := ""
+	if msg.Uinfo.Guard.Level > 0 {
+		guard = r.guardBadge(msg.Uinfo.Guard.Level) + " "
+	}
+
+	medal := r.Medal(msg.FansMedal.MedalName, msg.FansMedal.MedalLevel, (hexToUint32(msg.Uinfo.Medal.V2MedalColorLevel, 1)>>8)&0xffffff)
+
+	return fmt.Sprintf("%s %s%s%s %s", ts, medal, guard, user, r.style.DanmakuText.Render("进入直播间"))
 }

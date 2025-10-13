@@ -13,3 +13,5 @@ type SuperChat message.SuperChat
 type Gift message.Gift
 
 type GuardBuy message.GuardBuy
+
+type InteractWord message.InteractWord

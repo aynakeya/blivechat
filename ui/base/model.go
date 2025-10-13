@@ -33,7 +33,7 @@ func NewModel() *Model {
 type tickMsg time.Time
 
 func tick() tea.Cmd {
-	return tea.Tick(time.Second/2, func(t time.Time) tea.Msg { return tickMsg(t) })
+	return tea.Tick(time.Millisecond*100, func(t time.Time) tea.Msg { return tickMsg(t) })
 }
 
 func (m *Model) Init() tea.Cmd {
@@ -45,16 +45,12 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.String() {
-		case "ctrl+c", "q":
+		case "ctrl+c":
 			return m, tea.Quit
-		case "left":
-			if m.activeTab > 0 {
-				m.activeTab--
-			}
-			return m, nil
-		case "right":
-			if m.activeTab < len(m.tabs)-1 {
-				m.activeTab++
+		case "tab":
+			m.activeTab++
+			if m.activeTab >= len(m.tabs) {
+				m.activeTab = 0
 			}
 			return m, nil
 		}
