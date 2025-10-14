@@ -1,7 +1,6 @@
 package tabs
 
 import (
-	"blivechat/ui/styles"
 	"strings"
 
 	tea "github.com/charmbracelet/bubbletea"
@@ -10,7 +9,6 @@ import (
 type ConfigTab struct {
 	width  int
 	height int
-	style  *styles.Styles
 }
 
 func (m *ConfigTab) TabName() string {
@@ -18,7 +16,7 @@ func (m *ConfigTab) TabName() string {
 }
 
 func NewConfigTab() *ConfigTab {
-	return &ConfigTab{style: styles.Default}
+	return &ConfigTab{}
 }
 
 func (m *ConfigTab) Init() tea.Cmd { return nil }
@@ -40,5 +38,5 @@ func (m *ConfigTab) View() string {
 - 弹幕过滤: 无
 - 自动重连: 开启
 `
-	return m.style.ConfigText.Render(strings.TrimSpace(content))
+	return strings.TrimSpace(content)
 }

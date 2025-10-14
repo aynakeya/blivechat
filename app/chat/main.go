@@ -2,8 +2,8 @@ package main
 
 import (
 	"blivechat/internal"
-	"blivechat/ui/base"
 	"blivechat/ui/got"
+	"blivechat/ui/tab"
 	"os"
 
 	"github.com/charmbracelet/log"
@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	m := base.NewModel()
+	m := tab.NewModel()
 	p := tea.NewProgram(m, tea.WithAltScreen())
 
 	f, err := os.OpenFile("blivechat.log", os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
@@ -26,6 +26,7 @@ func main() {
 	backend := internal.NewBackend(p, 3819533, "")
 	got.Backend = backend
 	go func() {
+		go backend.UpdateRoomInfo()
 		err := backend.Run()
 		if err != nil {
 			log.Fatal(err)

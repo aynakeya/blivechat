@@ -1,6 +1,9 @@
 package model
 
-import "github.com/AynaLivePlayer/blivedm-go/message"
+import (
+	"github.com/AynaLivePlayer/blivedm-go/api"
+	"github.com/AynaLivePlayer/blivedm-go/message"
+)
 
 type LiveStart message.LiveStart
 
@@ -15,3 +18,5 @@ type Gift message.Gift
 type GuardBuy message.GuardBuy
 
 type InteractWord message.InteractWord
+
+type RoomInfo api.RoomInfo

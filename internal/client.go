@@ -63,7 +63,6 @@ func NewBackend(program *tea.Program, roomId int, cookie string) *Backend {
 			return
 		}
 		program.Send((*model.InteractWord)(interact))
-		log.Info(interact)
 	})
 
 	return &Backend{
@@ -102,4 +101,12 @@ func (b *Backend) SendDanmuku(request api.DanmakuRequest) error {
 	}
 	_, err := api.SendDanmaku(&request, &b.cred)
 	return err
+}
+
+func (b *Backend) UpdateRoomInfo() (*api.RoomInfo, error) {
+	info, err := api.GetRoomInfo(b.roomId)
+	if err == nil && info != nil {
+		b.program.Send((*model.RoomInfo)(info))
+	}
+	return info, err
 }

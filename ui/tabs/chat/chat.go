@@ -1,19 +1,16 @@
-package tabs
+package chat
 
 import (
 	"blivechat/model"
-	"blivechat/ui"
 	"blivechat/ui/got"
-	"blivechat/ui/renderer"
 	"github.com/AynaLivePlayer/blivedm-go/api"
-	"github.com/charmbracelet/log"
-	"strings"
-
 	"github.com/charmbracelet/bubbles/textarea"
 	"github.com/charmbracelet/bubbles/viewport"
 	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/log"
 	"github.com/muesli/reflow/wordwrap"
 	"github.com/muesli/reflow/wrap"
+	"strings"
 )
 
 type ChatTab struct {
@@ -23,7 +20,9 @@ type ChatTab struct {
 	width    int
 	height   int
 
-	renderer ui.ChatRenderer
+	infoLine string
+	renderer ChatRenderer
+	styles   Style
 }
 
 func (m *ChatTab) TabName() string { return "Chat" }
@@ -38,12 +37,15 @@ func NewChatTab() *ChatTab {
 	vp := viewport.New(0, 0)
 	vp.SetContent("")
 
-	return &ChatTab{
+	tab := &ChatTab{
 		lines:    make([]string, 0, 128),
 		input:    ti,
 		viewport: vp,
-		renderer: renderer.NewDefaultRenderer(),
+		renderer: &DefaultRenderer{},
+		styles:   DefaultStyles(),
 	}
+	tab.renderer.UseStyle(&tab.styles)
+	return tab
 }
 
 func (m *ChatTab) Init() tea.Cmd {
@@ -72,7 +74,8 @@ func (m *ChatTab) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.input, cmd = m.input.Update(msg)
 			cmds = append(cmds, cmd)
 		}
-
+	case *model.RoomInfo:
+		m.infoLine = m.renderer.RoomTitle(msg)
 	case *model.Danmaku:
 		m.appendLine(m.renderer.Danmuku(msg))
 	case *model.LiveStart:
@@ -92,7 +95,7 @@ func (m *ChatTab) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 		m.viewport.Width = m.width - 2
-		m.viewport.Height = m.height - 8
+		m.viewport.Height = m.height - 10
 		m.input.SetWidth(m.width - 4)
 		m.renderer.Styles().InputBox = m.renderer.Styles().InputBox.Width(m.width - 2)
 		m.refreshViewport()
@@ -105,7 +108,14 @@ func (m *ChatTab) View() string {
 	body := m.viewport.View()
 	inputView := m.renderer.Styles().InputBox.Render(m.input.View())
 
+	line := "no room info"
+	if m.infoLine != "" {
+		line = m.infoLine
+	}
+
 	return strings.Join([]string{
+		line,
+		m.renderer.Styles().Separator.Render(strings.Repeat("─", m.width)),
 		body,
 		m.renderer.Styles().Separator.Render(strings.Repeat("─", m.width)),
 		inputView,

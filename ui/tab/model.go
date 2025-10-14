@@ -1,32 +1,37 @@
-package base
+package tab
 
 import (
-	"blivechat/ui"
-	"blivechat/ui/styles"
 	"blivechat/ui/tabs"
+	"blivechat/ui/tabs/chat"
 	"strings"
 	"time"
 
 	tea "github.com/charmbracelet/bubbletea"
 )
 
+type Tab interface {
+	tea.Model
+	TabName() string
+}
+
 type Model struct {
 	activeTab int
-	tabs      []ui.Tab
+	tabs      []Tab
 
 	width  int
 	height int
-	style  *styles.Styles
+
+	style Style
 }
 
 func NewModel() *Model {
 	return &Model{
 		activeTab: 0,
-		tabs: []ui.Tab{
-			0: tabs.NewChatTab(),
+		tabs: []Tab{
+			0: chat.NewChatTab(),
 			1: tabs.NewConfigTab(),
 		},
-		style: styles.Default,
+		style: DefaultStyle(),
 	}
 }
 
