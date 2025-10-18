@@ -101,6 +101,7 @@ func (m *ChatTab) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.input.SetWidth(m.width - 4)
 		m.renderer.Styles().InputBox = m.renderer.Styles().InputBox.Width(m.width - 2)
 		m.refreshViewport()
+		m.viewport.GotoBottom()
 	}
 
 	return m, tea.Batch(cmds...)
