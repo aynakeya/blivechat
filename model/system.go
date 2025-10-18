@@ -10,3 +10,7 @@ type SystemMsg struct {
 	Level int
 	Msg   string
 }
+
+type DebugLineMsg struct {
+	Line string
+}

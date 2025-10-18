@@ -66,7 +66,9 @@ func (m *ChatTab) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 					err := got.Backend.SendDanmuku(api.DanmakuRequest{Msg: text})
 					if err != nil {
 						log.Errorf("send danmu failed: %v", err)
+						return
 					}
+					log.Info("send danmu success")
 				}()
 				m.input.Reset()
 			}

@@ -3,6 +3,7 @@ package tab
 import (
 	"blivechat/ui/tabs"
 	"blivechat/ui/tabs/chat"
+	"blivechat/ui/tabs/debug"
 	"strings"
 	"time"
 
@@ -30,6 +31,7 @@ func NewModel() *Model {
 		tabs: []Tab{
 			0: chat.NewChatTab(),
 			1: tabs.NewConfigTab(),
+			2: debug.NewDebugTab(nil),
 		},
 		style: DefaultStyle(),
 	}
@@ -64,10 +66,10 @@ func (m *Model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case tea.WindowSizeMsg:
 		m.width, m.height = msg.Width, msg.Height
 	}
-
-	tab := m.tabs[m.activeTab]
-	_, cmd := tab.Update(msg)
-	cmds = append(cmds, cmd)
+	for _, tab := range m.tabs {
+		_, cmd := tab.Update(msg)
+		cmds = append(cmds, cmd)
+	}
 	return m, tea.Batch(cmds...)
 }
 
