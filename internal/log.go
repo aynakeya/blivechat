@@ -5,6 +5,7 @@ import (
 	"bytes"
 	tea "github.com/charmbracelet/bubbletea"
 	"io"
+	"os"
 	"strings"
 )
 
@@ -31,4 +32,19 @@ func (w *teaLogWriter) Write(p []byte) (int, error) {
 		w.p.Send(&model.DebugLineMsg{Line: strings.TrimRight(line, "\r\n")})
 	}
 	return n, nil
+}
+
+func CreateLogWriter(p *tea.Program, logfile string) (io.Writer, func() error) {
+	if logfile != "" {
+		f, err := os.OpenFile(logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0644)
+		if err != nil {
+			panic(err)
+		}
+		return io.MultiWriter(f, NewTeaLogWriter(p)), func() error {
+			return f.Close()
+		}
+	}
+	return NewTeaLogWriter(p), func() error {
+		return nil
+	}
 }
