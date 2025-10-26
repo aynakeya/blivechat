@@ -1,4 +1,4 @@
-package tabs
+package cfgtab
 
 import (
 	"strings"

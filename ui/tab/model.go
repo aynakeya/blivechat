@@ -1,7 +1,7 @@
 package tab
 
 import (
-	"blivechat/ui/tabs"
+	"blivechat/ui/tabs/cfgtab"
 	"blivechat/ui/tabs/chat"
 	"blivechat/ui/tabs/debug"
 	"strings"
@@ -30,7 +30,7 @@ func NewModel() *Model {
 		activeTab: 0,
 		tabs: []Tab{
 			0: chat.NewChatTab(),
-			1: tabs.NewConfigTab(),
+			1: cfgtab.NewConfigTab(),
 			2: debug.NewDebugTab(nil),
 		},
 		style: DefaultStyle(),
