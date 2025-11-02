@@ -46,7 +46,7 @@ var mainCmd = &cobra.Command{
 					_, err := strconv.Atoi(val)
 					return err
 				}).Value(&roomIdStr)
-			err := input.Run()
+			err := input.WithTheme(huh.ThemeBase()).Run()
 			if err != nil {
 				log.Error("invalid room id")
 				return
