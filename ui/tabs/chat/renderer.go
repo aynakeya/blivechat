@@ -4,7 +4,6 @@ import (
 	"blivechat/model"
 	"fmt"
 	"github.com/charmbracelet/lipgloss"
-	"github.com/charmbracelet/log"
 	"time"
 )
 
@@ -202,7 +201,7 @@ func (r *DefaultRenderer) GuardBuy(msg *model.GuardBuy) string {
 func (r *DefaultRenderer) SuperChat(msg *model.SuperChat) string {
 	tsv := r.renderTimestamp(msg.Ts)
 
-	log.Info(msg)
+	//log.Info(msg)
 
 	container := r.style.SuperChat.Container
 	// todo: use sc background color

@@ -29,7 +29,7 @@ func (w *teaLogWriter) Write(p []byte) (int, error) {
 		}
 		line := string(data[:idx])
 		w.buf.Next(idx + 1)
-		w.p.Send(&model.DebugLineMsg{Line: strings.TrimRight(line, "\r\n")})
+		go w.p.Send(&model.DebugLineMsg{Line: strings.TrimRight(line, "\r\n")})
 	}
 	return n, nil
 }

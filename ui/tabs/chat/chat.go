@@ -23,6 +23,9 @@ type ChatTab struct {
 	infoLine string
 	renderer ChatRenderer
 	styles   Style
+
+	maxLines      int // ✅ 最大缓冲行数
+	stickToBottom bool
 }
 
 func (m *ChatTab) TabName() string { return "Chat" }
@@ -38,11 +41,13 @@ func NewChatTab() *ChatTab {
 	vp.SetContent("")
 
 	tab := &ChatTab{
-		lines:    make([]string, 0, 128),
-		input:    ti,
-		viewport: vp,
-		renderer: &DefaultRenderer{},
-		styles:   DefaultStyles(),
+		lines:         make([]string, 0, 128),
+		input:         ti,
+		viewport:      vp,
+		renderer:      &DefaultRenderer{},
+		styles:        DefaultStyles(),
+		maxLines:      2000,
+		stickToBottom: true,
 	}
 	tab.renderer.UseStyle(&tab.styles)
 	return tab
@@ -72,6 +77,17 @@ func (m *ChatTab) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				}()
 				m.input.Reset()
 			}
+		case "pgup":
+			m.viewport.HalfPageUp()
+			m.stickToBottom = false
+		case "pgdown":
+			m.viewport.HalfPageDown()
+			if m.viewport.AtBottom() {
+				m.stickToBottom = true
+			}
+		case "end":
+			m.viewport.GotoBottom()
+			m.stickToBottom = true
 		default:
 			m.input, cmd = m.input.Update(msg)
 			cmds = append(cmds, cmd)
@@ -101,7 +117,9 @@ func (m *ChatTab) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.input.SetWidth(m.width - 4)
 		m.renderer.Styles().InputBox = m.renderer.Styles().InputBox.Width(m.width - 2)
 		m.refreshViewport()
-		m.viewport.GotoBottom()
+		if m.stickToBottom {
+			m.viewport.GotoBottom()
+		}
 	}
 
 	return m, tea.Batch(cmds...)
@@ -130,8 +148,13 @@ func (m *ChatTab) appendLine(line string) {
 		return
 	}
 	m.lines = append(m.lines, line)
+	if m.maxLines > 0 && len(m.lines) > m.maxLines {
+		m.lines = m.lines[len(m.lines)-m.maxLines:]
+	}
 	m.refreshViewport()
-	m.viewport.GotoBottom()
+	if m.stickToBottom {
+		m.viewport.GotoBottom()
+	}
 }
 
 func (m *ChatTab) refreshViewport() {
