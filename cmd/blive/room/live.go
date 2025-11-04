@@ -20,11 +20,13 @@ var liveCmd = &cobra.Command{
 }
 
 func init() {
-	liveStartCmd.Flags().Int64VarP(&areaV2Code, "area", "a", 192, "sub area code (area_v2)")
+	liveStartCmd.Flags().Int64VarP(&areaV2Code, "area", "a", 0, "sub area code (area_v2)")
+	liveStartCmd.Flags().BoolVarP(&chooseArea, "choose-area", "", false, "choose area code using tui")
 	liveCmd.AddCommand(liveStartCmd, liveStopCmd)
 }
 
 var areaV2Code int64
+var chooseArea bool
 
 type streamingInfo struct {
 	addr     string
@@ -81,6 +83,15 @@ var liveStartCmd = &cobra.Command{
 	Use:   "start",
 	Short: "start live room",
 	RunE: func(cmd *cobra.Command, args []string) error {
+		if chooseArea {
+			tmp, err := runAreaUI()
+			if err != nil {
+				log.Errorf("fail to get area v2 code from ui: %v", err)
+				return nil
+			}
+			areaV2Code = tmp
+			log.Infof("area v2 code from ui %d", areaV2Code)
+		}
 		if areaV2Code == 0 {
 			log.Error("area code is not valid")
 			return nil
