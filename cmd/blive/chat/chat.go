@@ -1,16 +1,15 @@
-package main
+package chat
 
 import (
 	"blivechat/internal"
 	"blivechat/ui/got"
 	"blivechat/ui/tab"
+	tea "github.com/charmbracelet/bubbletea"
+	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"os"
 	"strconv"
-
-	tea "github.com/charmbracelet/bubbletea"
-	"github.com/charmbracelet/huh"
 )
 
 var logfile string
@@ -18,12 +17,12 @@ var flagCookie string
 
 func init() {
 	log.SetOutput(os.Stdout)
-	mainCmd.Flags().StringVarP(&logfile, "log-file", "l", "", "log file path, if not set, no log file will be created")
-	mainCmd.Flags().StringVarP(&flagCookie, "cookie", "c", os.Getenv("bilibili_cookie"), "cookie to use for session")
+	ChatCmd.Flags().StringVarP(&logfile, "log-file", "l", "", "log file path, if not set, no log file will be created")
+	ChatCmd.Flags().StringVarP(&flagCookie, "cookie", "c", os.Getenv("bilibili_cookie"), "cookie to use for session")
 }
 
-var mainCmd = &cobra.Command{
-	Use: "blivechat <room_id>",
+var ChatCmd = &cobra.Command{
+	Use: "chat <room_id>",
 	Run: func(cmd *cobra.Command, args []string) {
 		var roomId int
 		var err error
@@ -55,13 +54,6 @@ var mainCmd = &cobra.Command{
 		}
 		runMain(roomId, flagCookie)
 	},
-}
-
-func main() {
-	if err := mainCmd.Execute(); err != nil {
-		log.SetOutput(os.Stdout)
-		log.Error(err)
-	}
 }
 
 func runMain(roomId int, cookie string) {
