@@ -19,6 +19,6 @@ func init() {
 func main() {
 	if err := mainCmd.Execute(); err != nil {
 		log.SetOutput(os.Stdout)
-		log.Error(err)
+		//log.Error(err)
 	}
 }

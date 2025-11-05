@@ -1,6 +1,7 @@
 package room
 
 import (
+	"errors"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"net/http"
@@ -23,18 +24,18 @@ func init() {
 
 var RoomCmd = &cobra.Command{
 	Use: "room",
-	PersistentPreRun: func(cmd *cobra.Command, args []string) {
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 		if flagCookie == "" {
 			flagCookie = os.Getenv("bilibili_cookie")
 		}
 		if flagCookie == "" {
 			log.Error("no cookie provided, please provide cookie")
-			return
+			return errors.New("no cookie provided, please provide cookie")
 		}
 		cookies, err := http.ParseCookie(strings.TrimSpace(flagCookie))
 		if err != nil {
-			log.Error("invalid cookie provided, please provide correct cookie")
-			return
+			log.Errorf("invalid cookie provided, please provide correct cookie: %v", err)
+			return errors.New("invalid cookie provided, please provide correct cookie")
 		}
 		for _, c := range cookies {
 			if c.Name == "bili_jct" {
@@ -43,8 +44,9 @@ var RoomCmd = &cobra.Command{
 		}
 		if csrfToken == "" {
 			log.Error("no bili_jct cookie provided, please provide correct cookie")
-			return
+			return errors.New("no cookie provided, please provide correct cookie")
 		}
 		client = resty.New().SetCookies(cookies)
+		return nil
 	},
 }
