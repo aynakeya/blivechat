@@ -18,3 +18,7 @@ go build cmd/blive
 
 1. download from release
 2. build your own
+
+## Todo
+
+- [ ] Get playurl
