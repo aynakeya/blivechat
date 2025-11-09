@@ -1,0 +1,63 @@
+name: Build
+on:
+  push:
+#    tags:
+#      - '*'   # 仅在推送 tag 时触发
+    branches:
+      - dev
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest,windows-latest ] #  todo: macos-latest, no macos env.
+        goarch: [ amd64, arm64 ]
+    runs-on: ${{ matrix.os }}
+    env:
+      CMD_PATH: ./cmd/blive
+      PACKAGE_NAME: blive
+      TAG: ${{ github.ref_name }}     # tag 名称，例如 v1.2.3
+      GITHASH_FULL: ${{ github.sha }} # 完整 commit sha
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.24.x'
+      - name: Install Go Dependencies
+        run: |
+          go mod tidy
+      - name: Build (Linux)
+        if: runner.os == 'Linux'
+        shell: bash
+        run: |
+          SHORT=${GITHASH_FULL:0:8}
+          OUT="${PACKAGE_NAME}-linux-${{ matrix.goarch }}"
+          echo "Building $OUT  Version=$TAG  Hash=$SHORT  GOARCH=${{ matrix.goarch }}"
+          CGO_ENABLED=0 GOOS=linux GOARCH=${{ matrix.goarch }} \
+            go build -v \
+              -ldflags "-X 'main.Version=${TAG}' -X 'main.Hash=${SHORT}'" \
+              -o "$OUT" $CMD_PATH
+          tar czf "$OUT.tar.gz" "$OUT"
+      - name: Build (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          $short = $env:GITHASH_FULL.Substring(0,8)
+          $out = "$env:PACKAGE_NAME-windows-${{ matrix.goarch }}.exe"
+          echo "Building $out  Version=$env:TAG  Hash=$short  GOARCH=${{ matrix.goarch }}"
+          $env:CGO_ENABLED="0"
+          $env:GOOS="windows"
+          $env:GOARCH="${{ matrix.goarch }}"
+          go build -v `
+            -ldflags "-X 'main.Version=$($env:TAG)' -X 'main.Hash=$short'" `
+            -o $out $env:CMD_PATH
+          Compress-Archive -Path $out -DestinationPath "$env:PACKAGE_NAME-windows-${{ matrix.goarch }}.zip" -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blive-${{ runner.os }}-${{ matrix.goarch }}
+          path: |
+            blive-linux-${{ matrix.goarch }}*
+            blive-windows-${{ matrix.goarch }}*
+            *.zip
+            *.tar.gz
