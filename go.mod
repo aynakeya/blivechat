@@ -4,10 +4,8 @@ go 1.24.0
 
 toolchain go1.24.4
 
-replace github.com/AynaLivePlayer/blivedm-go => ../AyAudioBot/blivedm-go
-
 require (
-	github.com/AynaLivePlayer/blivedm-go v0.0.0-20251007125252-f919c79c72f4
+	github.com/AynaLivePlayer/blivedm-go v0.0.0-20251109134927-cc4a4ca07110
 	github.com/charmbracelet/bubbles v0.21.1-0.20250623103423-23b8fd6302d7
 	github.com/charmbracelet/bubbletea v1.3.10
 	github.com/charmbracelet/huh v0.8.0
