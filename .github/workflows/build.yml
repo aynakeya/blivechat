@@ -1,10 +1,10 @@
 name: Build
 on:
   push:
-    #    tags:
-    #      - 'v*.*.*'   # 仅在推送 tag 时触发
-    branches:
-      - dev
+        tags:
+          - 'v*.*.*'   # 仅在推送 tag 时触发
+#    branches:
+#      - dev
 jobs:
   build:
     strategy:
