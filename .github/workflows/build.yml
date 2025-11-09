@@ -42,11 +42,11 @@ jobs:
           SHORT=${GITHASH_FULL:0:8}
           OUT="${PACKAGE_NAME}-linux-${GOARCH}"
           echo "Building $OUT  Version=$TAG  Hash=$SHORT  GOARCH=${GOARCH} GOOS=${GOOS}"
+          rm -f "$OUT"
           GOOS=linux\
             go build -v \
               -ldflags "-X 'main.Version=${TAG}' -X 'main.Hash=${SHORT}'" \
               -o "$OUT" $CMD_PATH
-          tar czf "$OUT.tar.gz" "$OUT"
       - name: Build (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
@@ -54,11 +54,10 @@ jobs:
           $short = $env:GITHASH_FULL.Substring(0,8)
           $out = "$env:PACKAGE_NAME-windows-$env:GOARCH.exe"
           Write-Host "Building $out  Version=$env:TAG  Hash=$short  GOARCH=$env:GOARCH GOOS=$env:GOOS"
+          if (Test-Path $out) { Remove-Item -Force $out }
           go build -v `
             -ldflags "-X 'main.Version=$($env:TAG)' -X 'main.Hash=$short'" `
             -o $out $env:CMD_PATH
-          Compress-Archive -Path $out -DestinationPath "$env:PACKAGE_NAME-windows-$env:GOARCH.zip" -Force
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
