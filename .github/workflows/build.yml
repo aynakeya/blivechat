@@ -2,14 +2,14 @@ name: Build
 on:
   push:
     #    tags:
-    #      - '*'   # 仅在推送 tag 时触发
+    #      - 'v*.*.*'   # 仅在推送 tag 时触发
     branches:
       - dev
 jobs:
   build:
     strategy:
       matrix:
-        os: [ ubuntu-latest,windows-latest ] #  todo: macos-latest, no macos env.
+        os: [ ubuntu-latest,macos-latest,windows-latest ]
         goarch: [ amd64, arm64 ]
     runs-on: ${{ matrix.os }}
     env:
@@ -27,7 +27,6 @@ jobs:
       - name: Install Go Dependencies
         run: |
           go mod tidy
-
       - name: Build
         shell: bash
         run: |
@@ -41,11 +40,13 @@ jobs:
             echo "Building ${EXE}"
             go build -o "${EXE}" -ldflags "-X main.Version=${TAG} -X main.Hash=${HASH8}" "${CMD_PATH}"
           fi
-
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: blive-${{ matrix.os }}-${{ matrix.goarch }}
-          path: |
-            blive-${{ matrix.os }}-${{ matrix.goarch }}
-            blive-${{ matrix.os }}-${{ matrix.goarch }}.exe
+          path: blive-${{ matrix.os }}-${{ matrix.goarch }}*
+      - name: Make Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: blive-${{ matrix.os }}-${{ matrix.goarch }}*
