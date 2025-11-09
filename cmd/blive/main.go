@@ -3,13 +3,17 @@ package main
 import (
 	"blivechat/cmd/blive/chat"
 	"blivechat/cmd/blive/room"
+	"fmt"
 	"github.com/charmbracelet/log"
 	"github.com/spf13/cobra"
 	"os"
 )
 
+const Version = "0.1.0"
+
 var mainCmd = &cobra.Command{
-	Use: "blive",
+	Use:   "blive",
+	Short: fmt.Sprintf("bilibili live cli, ver %s", Version),
 }
 
 func init() {
