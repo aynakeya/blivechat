@@ -9,7 +9,7 @@ import (
 	"os"
 )
 
-const (
+var (
 	Version = "0.1.0"
 	Hash    = "00000000"
 )
