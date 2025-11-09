@@ -14,7 +14,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       CMD_PATH: ./cmd/blive
-      PACKAGE_NAME: blive
+      EXE: blive-${{ matrix.os }}-${{matrix.goarch}}
       TAG: ${{ github.ref_name }}     # tag 名称，例如 v1.2.3
       GITHASH_FULL: ${{ github.sha }} # 完整 commit sha
       CGO_ENABLED: 0
@@ -24,42 +24,29 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: '1.24.x'
-#      - uses: actions/cache@v4
-#        with:
-#          path: |
-#            ~/.cache/go-build
-#            ~/go/pkg/mod
-#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-#          restore-keys: |
-#            ${{ runner.os }}-go-
       - name: Install Go Dependencies
         run: |
           go mod tidy
-      - name: Build (Linux)
-        if: runner.os == 'Linux'
-        shell: bash
+
+      - name: Build (non-Windows)
+        if: runner.os != 'Windows'
         run: |
-          SHORT=${GITHASH_FULL:0:8}
-          OUT="${PACKAGE_NAME}-linux-${GOARCH}"
-          echo "Building $OUT  Version=$TAG  Hash=$SHORT  GOARCH=${GOARCH} GOOS=${GOOS}"
-          GOOS=linux\
-            go build -v \
-              -ldflags "-X 'main.Version=${TAG}' -X 'main.Hash=${SHORT}'" \
-              -o "$OUT" $CMD_PATH
+          set -e
+          echo "Runner OS: $RUNNER_OS"
+          echo "Building ${EXE} (GOOS=$GOOS GOARCH=$GOARCH)"
+          go build -trimpath -o "${EXE}" -ldflags "-X main.version=${TAG} -X main.gitHash=${GITHASH_FULL}" "${CMD_PATH}"
       - name: Build (Windows)
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          $short = $env:GITHASH_FULL.Substring(0,8)
-          $out = "$env:PACKAGE_NAME-windows-$env:GOARCH.exe"
-          Write-Host "Building $out  Version=$env:TAG  Hash=$short  GOARCH=$env:GOARCH GOOS=$env:GOOS"
-          go build -v `
-            -ldflags "-X 'main.Version=$($env:TAG)' -X 'main.Hash=$short'" `
-            -o $out $env:CMD_PATH
+          Write-Host "Runner OS: $env:RUNNER_OS"
+          Write-Host "Building $out (GOOS=$($env:GOOS) GOARCH=$($env:GOARCH))"
+          go build -trimpath -o "${env:EXE}.exe" -ldflags "-X main.version=$($env:TAG) -X main.gitHash=$($env:GITHASH_FULL)" $env:CMD_PATH
+
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: blive-${{ runner.os }}-${{ matrix.goarch }}
+          name: blive-${{ matrix.os }}-${{ matrix.goarch }}
           path: |
-            blive-*-${{ matrix.goarch }}
-            blive-*-${{ matrix.goarch }}.exe
+            blive-${{ matrix.os }}-${{ matrix.goarch }}
+            blive-${{ matrix.os }}-${{ matrix.goarch }}.exe
