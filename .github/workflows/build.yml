@@ -1,0 +1,52 @@
+name: Build
+on:
+  push:
+        tags:
+          - 'v*.*.*'   # 仅在推送 tag 时触发
+#    branches:
+#      - dev
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest,macos-latest,windows-latest ]
+        goarch: [ amd64, arm64 ]
+    runs-on: ${{ matrix.os }}
+    env:
+      CMD_PATH: ./cmd/blive
+      EXE: blive-${{ matrix.os }}-${{matrix.goarch}}
+      TAG: ${{ github.ref_name }}
+      GITHASH_FULL: ${{ github.sha }}
+      CGO_ENABLED: 0
+      GOARCH: ${{matrix.goarch}}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: '1.24.x'
+      - name: Install Go Dependencies
+        run: |
+          go mod tidy
+      - name: Build
+        shell: bash
+        run: |
+          set -e
+          HASH8=${GITHASH_FULL:0:8}
+          echo "Runner OS: $RUNNER_OS"
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            echo "Building ${EXE}.exe"
+            go build -o "${EXE}.exe" -ldflags "-X main.Version=${TAG} -X main.Hash=${HASH8}" "${CMD_PATH}"
+          else
+            echo "Building ${EXE}"
+            go build -o "${EXE}" -ldflags "-X main.Version=${TAG} -X main.Hash=${HASH8}" "${CMD_PATH}"
+          fi
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: blive-${{ matrix.os }}-${{ matrix.goarch }}
+          path: blive-${{ matrix.os }}-${{ matrix.goarch }}*
+      - name: Make Release
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: blive-${{ matrix.os }}-${{ matrix.goarch }}*

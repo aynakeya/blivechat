@@ -1,3 +1,5 @@
+github.com/AynaLivePlayer/blivedm-go v0.0.0-20251109134927-cc4a4ca07110 h1:A6IBTHcv/Pisf65FAsM4oxN1OXpVjpIYlVXDugCIuiw=
+github.com/AynaLivePlayer/blivedm-go v0.0.0-20251109134927-cc4a4ca07110/go.mod h1:CtiYF0MDMCzrPUuM96b2194ANTtRxnA/YdtJNdAdxuQ=
 github.com/MakeNowJust/heredoc v1.0.0 h1:cXCdzVdstXyiTqTvfqk9SDHpKNjxuom+DOlyEeQ4pzQ=
 github.com/MakeNowJust/heredoc v1.0.0/go.mod h1:mG5amYoWBHf8vpLOuehzbGGw0EHxpZZ6lCpQ4fNJ8LE=
 github.com/andybalholm/brotli v1.1.0 h1:eLKJA0d02Lf0mVpIDgYnqXcUn0GqVmEFny3VuID1U3M=

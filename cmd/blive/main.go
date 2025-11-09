@@ -9,11 +9,14 @@ import (
 	"os"
 )
 
-const Version = "0.1.0"
+var (
+	Version = "0.1.0"
+	Hash    = "00000000"
+)
 
 var mainCmd = &cobra.Command{
 	Use:   "blive",
-	Short: fmt.Sprintf("bilibili live cli, ver %s", Version),
+	Short: fmt.Sprintf("bilibili live cli, %s (%s)", Version, Hash),
 }
 
 func init() {
