@@ -24,14 +24,14 @@ jobs:
       - uses: actions/setup-go@v6
         with:
           go-version: '1.24.x'
-      - uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cache/go-build
-            ~/go/pkg/mod
-          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-go-
+#      - uses: actions/cache@v4
+#        with:
+#          path: |
+#            ~/.cache/go-build
+#            ~/go/pkg/mod
+#          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+#          restore-keys: |
+#            ${{ runner.os }}-go-
       - name: Install Go Dependencies
         run: |
           go mod tidy
@@ -42,7 +42,6 @@ jobs:
           SHORT=${GITHASH_FULL:0:8}
           OUT="${PACKAGE_NAME}-linux-${GOARCH}"
           echo "Building $OUT  Version=$TAG  Hash=$SHORT  GOARCH=${GOARCH} GOOS=${GOOS}"
-          rm -f "$OUT"
           GOOS=linux\
             go build -v \
               -ldflags "-X 'main.Version=${TAG}' -X 'main.Hash=${SHORT}'" \
@@ -54,7 +53,6 @@ jobs:
           $short = $env:GITHASH_FULL.Substring(0,8)
           $out = "$env:PACKAGE_NAME-windows-$env:GOARCH.exe"
           Write-Host "Building $out  Version=$env:TAG  Hash=$short  GOARCH=$env:GOARCH GOOS=$env:GOOS"
-          if (Test-Path $out) { Remove-Item -Force $out }
           go build -v `
             -ldflags "-X 'main.Version=$($env:TAG)' -X 'main.Hash=$short'" `
             -o $out $env:CMD_PATH
@@ -63,4 +61,5 @@ jobs:
         with:
           name: blive-${{ runner.os }}-${{ matrix.goarch }}
           path: |
-            blive-*-${{ matrix.goarch }}.*
+            blive-*-${{ matrix.goarch }}
+            blive-*-${{ matrix.goarch }}.exe
