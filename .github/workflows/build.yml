@@ -64,7 +64,4 @@ jobs:
         with:
           name: blive-${{ runner.os }}-${{ matrix.goarch }}
           path: |
-            blive-linux-${{ matrix.goarch }}*
-            blive-windows-${{ matrix.goarch }}*
-            *.zip
-            *.tar.gz
+            blive-*-${{ matrix.goarch }}.*
