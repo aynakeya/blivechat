@@ -15,8 +15,8 @@ jobs:
     env:
       CMD_PATH: ./cmd/blive
       EXE: blive-${{ matrix.os }}-${{matrix.goarch}}
-      TAG: ${{ github.ref_name }}     # tag 名称，例如 v1.2.3
-      GITHASH_FULL: ${{ github.sha }} # 完整 commit sha
+      TAG: ${{ github.ref_name }}
+      GITHASH_FULL: ${{ github.sha }}
       CGO_ENABLED: 0
       GOARCH: ${{matrix.goarch}}
     steps:
@@ -28,20 +28,19 @@ jobs:
         run: |
           go mod tidy
 
-      - name: Build (non-Windows)
-        if: runner.os != 'Windows'
+      - name: Build
+        shell: bash
         run: |
           set -e
+          HASH8=${GITHASH_FULL:0:8}
           echo "Runner OS: $RUNNER_OS"
-          echo "Building ${EXE} (GOOS=$GOOS GOARCH=$GOARCH)"
-          go build -trimpath -o "${EXE}" -ldflags "-X main.version=${TAG} -X main.gitHash=${GITHASH_FULL}" "${CMD_PATH}"
-      - name: Build (Windows)
-        if: runner.os == 'Windows'
-        shell: pwsh
-        run: |
-          Write-Host "Runner OS: $env:RUNNER_OS"
-          Write-Host "Building $out (GOOS=$($env:GOOS) GOARCH=$($env:GOARCH))"
-          go build -trimpath -o "${env:EXE}.exe" -ldflags "-X main.version=$($env:TAG) -X main.gitHash=$($env:GITHASH_FULL)" $env:CMD_PATH
+          if [[ "$RUNNER_OS" == "Windows" ]]; then
+            echo "Building ${EXE}.exe"
+            go build -o "${EXE}.exe" -ldflags "-X main.Version=${TAG} -X main.Hash=${HASH8}" "${CMD_PATH}"
+          else
+            echo "Building ${EXE}"
+            go build -o "${EXE}" -ldflags "-X main.Version=${TAG} -X main.Hash=${HASH8}" "${CMD_PATH}"
+          fi
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
